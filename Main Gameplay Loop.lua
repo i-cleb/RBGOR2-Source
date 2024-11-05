@@ -77,19 +77,28 @@ function spawnHazard()
 	hazardsCopy:MakeJoints()
 end
 
-function roundTime()
-	RoundTime.Value = 420
+function roundTime1()
+	Round1Time.Value = 210
 
-	for r = RoundTime.Value, 0, -1 do
-		while Pause do
-			wait(0.1)
-		end
-		RoundTime.Value = r
-		RoundMinuets.Value = math.floor(RoundTime.Value / 60)
-		RoundSeconds.Value = math.floor(RoundTime.Value % 60)
+	for r = Round1Time.Value, 0, -1 do
+		Round1Time.Value = r
+		Round1Minuets.Value = math.floor(Round1Time.Value / 60)
+		Round1Seconds.Value = math.floor(Round1Time.Value % 60)
 		wait(1)
 	end
 end
+
+function roundTime2()
+	Round2Time.Value = 210
+
+	for r = Round2Time.Value, 0, -1 do
+		Round2Time.Value = r
+		Round2Minuets.Value = math.floor(Round2Time.Value / 60)
+		Round2Seconds.Value = math.floor(Round2Time.Value % 60)
+		wait(1)
+	end
+end
+
 
 function hazardTime()
 	HazardTime.Value = 150
@@ -105,23 +114,22 @@ end
 -------------------------------------------------------------------------------
 
 regenStructures()
-roundTime()
+roundTime1()
 while true do
-	if RoundTime.Value == 210 then
-		Pause = true
+	if Round1Time.Value == 0 then
 		spawnHazard()
 		hazardTime()
 		if HazardTime.Value == 0 then
 			workspace.Hazards:ClearAllChildren()
-			Pause = false
+			roundTime2()
 		end
 	end
 	
-	if RoundTime.Value == 0 then
+	if Round2Time.Value == 0 then
 		spawnLobby()
 		wait(30)
 		regenStructures()
-		roundTime()
+		roundTime1()
 	end
 end
 
