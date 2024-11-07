@@ -1,12 +1,15 @@
-local RoundTime = game.ReplicatedStorage.RoundTime
+local Round1Time = game.ReplicatedStorage.Round1Time
+local Round2Time = game.ReplicatedStorage.Round2Time
 local HazardTime = game.ReplicatedStorage.HazardTime
-local RoundMinuets = game.ReplicatedStorage.RoundMinuets
-local RoundSeconds = game.ReplicatedStorage.RoundSeconds
+local Round1Minuets = game.ReplicatedStorage.Round1Minuets
+local Round2Minuets = game.ReplicatedStorage.Round2Minuets
+local Round1Seconds = game.ReplicatedStorage.Round1Seconds
+local Round2Seconds = game.ReplicatedStorage.Round2Seconds
 local HazardMinuets = game.ReplicatedStorage.HazardMinuets
 local HazardSeconds = game.ReplicatedStorage.HazardSeconds
 local Pause = false
 
-function respawnPlayers() -- Respawn players to the stage
+function respawnPlayers() -- Respawn players to the stage/lobby
 	for index,player in pairs(game:GetService("Players"):GetPlayers()) do -- gets all the players
 		player:LoadCharacter() -- forces the respawn
 	end
@@ -70,14 +73,14 @@ function spawnLobby() -- Removes the currently loaded map and spawns the lobby
 
 end
 
-function spawnHazard()
+function spawnHazard() -- Grabs Hazards from the folder and places it in the workspace
 	local hazards = game.ServerStorage.Disasters:GetChildren()
 	local hazardsCopy = hazards[math.random(1, #hazards)]:Clone()
 	hazardsCopy.Parent = workspace.Hazards
 	hazardsCopy:MakeJoints()
 end
 
-function roundTime1()
+function roundTime1() -- Countdown for active round before Hazard spawn
 	Round1Time.Value = 210
 
 	for r = Round1Time.Value, 0, -1 do
@@ -88,7 +91,7 @@ function roundTime1()
 	end
 end
 
-function roundTime2()
+function roundTime2() -- Countdown for active round after Hazard spawn
 	Round2Time.Value = 210
 
 	for r = Round2Time.Value, 0, -1 do
@@ -100,7 +103,7 @@ function roundTime2()
 end
 
 
-function hazardTime()
+function hazardTime() -- Countdown for active Hazard
 	HazardTime.Value = 150
 
 	for h = HazardTime.Value, 0, -1 do
