@@ -9,7 +9,7 @@ local HazardMinuets = game.ReplicatedStorage.HazardMinuets
 local HazardSeconds = game.ReplicatedStorage.HazardSeconds
 local Pause = false
 local spwnGear = true
-local gears = {383608755, 928796097, 97161241, 972187699, 928914739, 503957396, 522587921, 563287969, 1145081326, 1208300505, 34398938, 186867645, 10758456, 243007180, 212296936, 48596305, 72713855, 118281463, 107458483, 11999247, 11377306, 11563251, 115377964, 225921000, 90718505, 1180418251, 66426498, 566780253, 95951330, 846792499, 11999279, 972189904, 1046323916, 391005275, 928806888, 169602103, 130112971, 1492225511, 208659586, 1060280135, 2535102910, 71037101, 261439002, 330296114, 87361662, 155661985, 2605966484, 2226815033, 1215506016, 172248941, 928805891, 395205954, 83021250, 174752245, 168143042, 208659734, 206798405, 330295904}
+local Gear = game.ServerStorage.Gears:GetChildren()
 
 function respawnPlayers() -- Respawn players to the stage
 	for index,player in pairs(game:GetService("Players"):GetPlayers()) do -- gets all the players
@@ -50,6 +50,7 @@ end
 
 function regenStructures() -- Removes the currently loaded map and spawns a new one
 	workspace.StructuresL:ClearAllChildren()
+	spwnGear = true
 	local maps = game.ServerStorage.Clones.Maps:GetChildren()
 	local mapCopy = maps[math.random(1, #maps)]:Clone()
 	mapCopy.Parent = workspace.Structures
@@ -65,11 +66,11 @@ end
 
 function spawnLobby() -- Removes the currently loaded map and spawns the lobby
 	workspace.Structures:ClearAllChildren()
+	spwnGear = false
 	local lobby = game.ServerStorage.Lobby:GetChildren()
 	local lobbyCopy = lobby[math.random(1, #lobby)]:Clone()
 	lobbyCopy.Parent = workspace.StructuresL
 	lobbyCopy:MakeJoints()
-	spwnGear = false
 
 	respawnPlayers()
 	lobbyMusic()
@@ -85,7 +86,7 @@ function spawnHazard()
 end
 
 function roundTime1()
-	Round1Time.Value = 210
+	Round1Time.Value = 15
 
 	for r = Round1Time.Value, 0, -1 do
 		Round1Time.Value = r
@@ -96,7 +97,7 @@ function roundTime1()
 end
 
 function roundTime2()
-	Round2Time.Value = 210
+	Round2Time.Value = 15
 
 	for r = Round2Time.Value, 0, -1 do
 		Round2Time.Value = r
@@ -108,7 +109,7 @@ end
 
 
 function hazardTime()
-	HazardTime.Value = 150
+	HazardTime.Value = 5
 
 	for h = HazardTime.Value, 0, -1 do
 		HazardTime.Value = h
@@ -118,35 +119,33 @@ function hazardTime()
 	end
 end
 
-function plrGear()
-	if spwnGear == true then
-		game.Players.PlayerAdded:connect(function(ply)
-		ply.CharacterAdded:Connect(function()
-			local taken = {}
-			local function getGear()
-				local id = math.random(1,#gears)
-				while taken[id] do
-					id = math.random(1,#gears)
-				end
-				taken[id] = true
-				local model = game:GetService("InsertService"):LoadAsset(gears[id])
-				return model
-			end
-			for i = 1,6 do
-				local model = getGear()
-				for _,v in pairs(model:GetChildren()) do
-					if v:IsA("Tool") or v:IsA("HopperBin") then
-						v.Parent = ply.Backpack
-					end
-				end
-			end
-		end)
-	end) 
-	end
-end
 
+game.Players.PlayerAdded:Connect(function(ply)
+	ply.CharacterAdded:Connect(function()
+		if spwnGear == true then
+			local used = {}
+			local function getGear()
+				local GearCopy = math.random(1, #Gear)
+				while used[GearCopy] do
+					GearCopy = math.random(1, #Gear)
+				end
+				used[GearCopy] = true
+				local items = Gear[GearCopy]
+				return items
+			end
+			
+			for i = 1,6 do
+				local item = getGear()
+				local itemCopy = item:Clone()
+				itemCopy.Parent = ply.Backpack
+			end
+		end
+	end)
+end)
+
+	
 -------------------------------------------------------------------------------
-plrGear()
+
 regenStructures()
 roundTime1()
 while true do
@@ -160,14 +159,15 @@ while true do
 	end
 	
 	if Round2Time.Value == 0 then
-		spwnGear = false
 		spawnLobby()
 		wait(30)
 		regenStructures()
 		roundTime1()
-		spwnGear = true
+		
 	end
 end
+
+
 
 
 
