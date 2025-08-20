@@ -86,7 +86,7 @@ function spawnHazard()
 end
 
 function roundTime1()
-	Round1Time.Value = 15
+	Round1Time.Value = 210
 
 	for r = Round1Time.Value, 0, -1 do
 		Round1Time.Value = r
@@ -97,7 +97,7 @@ function roundTime1()
 end
 
 function roundTime2()
-	Round2Time.Value = 15
+	Round2Time.Value = 210
 
 	for r = Round2Time.Value, 0, -1 do
 		Round2Time.Value = r
@@ -109,7 +109,7 @@ end
 
 
 function hazardTime()
-	HazardTime.Value = 5
+	HazardTime.Value = 150
 
 	for h = HazardTime.Value, 0, -1 do
 		HazardTime.Value = h
