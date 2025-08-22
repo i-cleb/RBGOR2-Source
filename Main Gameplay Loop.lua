@@ -1,15 +1,12 @@
 local Round1Time = game.ReplicatedStorage.Round1Time
-local Round2Time = game.ReplicatedStorage.Round2Time
-local HazardTime = game.ReplicatedStorage.HazardTime
 local Round1Minuets = game.ReplicatedStorage.Round1Minuets
-local Round2Minuets = game.ReplicatedStorage.Round2Minuets
 local Round1Seconds = game.ReplicatedStorage.Round1Seconds
-local Round2Seconds = game.ReplicatedStorage.Round2Seconds
-local HazardMinuets = game.ReplicatedStorage.HazardMinuets
-local HazardSeconds = game.ReplicatedStorage.HazardSeconds
 local Pause = false
 local spwnGear = true
 local Gear = game.ServerStorage.Gears:GetChildren()
+local timerGUI = game.StarterGui.Timer
+local interGUI = game.StarterGui.Intermission
+local recordKD = true
 
 function respawnPlayers() -- Respawn players to the stage
 	for index,player in pairs(game:GetService("Players"):GetPlayers()) do -- gets all the players
@@ -27,6 +24,22 @@ function stageMusic() -- Plays the stage music
 	local music = game.ServerStorage.Music.StageMusic:GetChildren()
 	local musicCopy = music[math.random(1, #music)]:Clone()
 	musicCopy.Parent = workspace
+	local loadedMusic = workspace:FindFirstChildOfClass("Sound", "Music")
+
+	loadedMusic:Play()
+	loadedMusic.Looped = true
+end
+
+function hazardMusic() -- Plays the hazard music
+	local existingSound = workspace:FindFirstChildOfClass("Sound", "Music")
+	if existingSound then
+		existingSound:Stop()
+		existingSound:Destroy()
+	end -- Checks to see if there's currently a song playing and kills it if so
+
+	local hmusic = game.ServerStorage.Music.HazardMusic:GetChildren()
+	local hmusicCopy = hmusic[math.random(1, #hmusic)]:Clone()
+	hmusicCopy.Parent = workspace
 	local loadedMusic = workspace:FindFirstChildOfClass("Sound", "Music")
 
 	loadedMusic:Play()
@@ -55,22 +68,26 @@ function regenStructures() -- Removes the currently loaded map and spawns a new 
 	local mapCopy = maps[math.random(1, #maps)]:Clone()
 	mapCopy.Parent = workspace.Structures
 	mapCopy:MakeJoints()
-	spwnGear = true
+	interGUI.Enabled = false
+	timerGUI.Enabled = true
 
 	respawnPlayers()
 	stageMusic()
 
-
+	recordKD = true
 
 end
 
 function spawnLobby() -- Removes the currently loaded map and spawns the lobby
 	workspace.Structures:ClearAllChildren()
+	recordKD = false
 	spwnGear = false
 	local lobby = game.ServerStorage.Lobby:GetChildren()
 	local lobbyCopy = lobby[math.random(1, #lobby)]:Clone()
 	lobbyCopy.Parent = workspace.StructuresL
 	lobbyCopy:MakeJoints()
+	timerGUI.Enabled = false
+	interGUI.Enabled = true
 
 	respawnPlayers()
 	lobbyMusic()
@@ -86,7 +103,7 @@ function spawnHazard()
 end
 
 function roundTime1()
-	Round1Time.Value = 210
+	Round1Time.Value = 180
 
 	for r = Round1Time.Value, 0, -1 do
 		Round1Time.Value = r
@@ -97,24 +114,24 @@ function roundTime1()
 end
 
 function roundTime2()
-	Round2Time.Value = 210
+	Round1Time.Value = 180
 
-	for r = Round2Time.Value, 0, -1 do
-		Round2Time.Value = r
-		Round2Minuets.Value = math.floor(Round2Time.Value / 60)
-		Round2Seconds.Value = math.floor(Round2Time.Value % 60)
+	for r = Round1Time.Value, 0, -1 do
+		Round1Time.Value = r
+		Round1Minuets.Value = math.floor(Round1Time.Value / 60)
+		Round1Seconds.Value = math.floor(Round1Time.Value % 60)
 		wait(1)
 	end
 end
 
 
 function hazardTime()
-	HazardTime.Value = 150
+	Round1Time.Value = 60
 
-	for h = HazardTime.Value, 0, -1 do
-		HazardTime.Value = h
-		HazardMinuets.Value = math.floor(HazardTime.Value / 60)
-		HazardSeconds.Value = math.floor(HazardTime.Value % 60)
+	for h = Round1Time.Value, 0, -1 do
+		Round1Time.Value = h
+		Round1Minuets.Value = math.floor(Round1Time.Value / 60)
+		Round1Seconds.Value = math.floor(Round1Time.Value % 60)
 		wait(1)
 	end
 end
@@ -143,6 +160,45 @@ game.Players.PlayerAdded:Connect(function(ply)
 	end)
 end)
 
+
+local Players = game.Players
+
+local Template = Instance.new 'BoolValue'
+Template.Name = 'leaderstats'
+
+Instance.new('IntValue', Template).Name = "Kills"
+Instance.new('IntValue', Template).Name = "Deaths"
+
+
+Players.PlayerAdded:connect(function(Player)
+	wait(1)
+	local Stats = Template:Clone()
+	Stats.Parent = Player
+	local Deaths = Stats.Deaths
+	Player.CharacterAdded:connect(function(Character)
+		if recordKD == true then
+			Deaths.Value = Deaths.Value + 1
+			local Humanoid = Character:FindFirstChild "Humanoid"
+			if Humanoid then
+				Humanoid.Died:connect(function()
+					for i, Child in pairs(Humanoid:GetChildren()) do
+						if Child:IsA('ObjectValue') and Child.Value and Child.Value:IsA('Player') then
+							local Killer = Child.Value
+							if Killer:FindFirstChild 'leaderstats' and Killer.leaderstats:FindFirstChild "Kills" then
+								local Kills = Killer.leaderstats.Kills
+								Kills.Value = Kills.Value + 1
+							end
+							return 
+						end
+					end
+				end)
+			end
+		end
+	end)
+end)
+
+
+
 	
 -------------------------------------------------------------------------------
 
@@ -151,22 +207,23 @@ roundTime1()
 while true do
 	if Round1Time.Value == 0 then
 		spawnHazard()
+		hazardMusic()
 		hazardTime()
-		if HazardTime.Value == 0 then
+		if Round1Time.Value == 0 then
 			workspace.Hazards:ClearAllChildren()
+			stageMusic()
 			roundTime2()
 		end
 	end
 	
-	if Round2Time.Value == 0 then
+	if Round1Time.Value == 0 then
 		spawnLobby()
 		wait(30)
 		regenStructures()
 		roundTime1()
-		
 	end
+	
 end
-
 
 
 
